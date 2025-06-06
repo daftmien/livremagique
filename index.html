@@ -2,110 +2,169 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Livre Magique – Boutons Extérieurs</title>
+  <title>Livre Magique – Responsive</title>
   <style>
-    body {
+    /* ===========================================
+       1. Corps Flex pour centrer horizontalement
+       =========================================== */
+    html, body {
       margin: 0;
       padding: 0;
-      background: #f0f0f0;
+      width: 100%;
+      height: 100%;
+    }
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: visible; /* pour laisser les flèches apparaître */
-    }
-    /* Conteneur global : largeur fixe à 600px pour accueillir le livre et les flèches */
-    #container {
-      position: relative;
-      width: 600px;
-      overflow: visible; /* s’assurer que rien ne soit rogné */
+      background: #f0f0f0;
+      overflow: visible; /* laisser déborder les flèches */
+      font-family: Arial, sans-serif;
     }
 
-    /* --- Couverture (300×auto) centrée dans 600px --- */
+    /* =================================================
+       2. Conteneur du livre à 100% de l’espace parent
+       ================================================= */
+    #container {
+      position: relative;
+      width: 100%;      /* prendra 100% de l’iframe ou du conteneur parent */
+      height: 100%;     /* idem */
+      max-width: 600px;  /* on limite au besoin à 600px de large */
+      max-height: 800px; /* on limite au besoin à 800px de haut */
+      overflow: visible; /* laisser déborder le livre (double-page) */
+    }
+
+    /* -------------------------------------------------
+       3. Couverture (pleine largeur, ratio 3:4 conservé)
+       ------------------------------------------------- */
     #cover {
-      width: 300px;
+      width: 100%;           /* pleine largeur du conteneur */
+      aspect-ratio: 3 / 4;   /* ratio 300×400 ≃ 3/4 */
       cursor: pointer;
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      margin: 0 auto; /* centre la couverture dans le conteneur de 600px */
+      position: relative;
+      background: #fff;
     }
     #cover img {
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover; /* jamais rognage vertical */
       display: block;
-      margin: 0 auto;
     }
 
-    /* --- Livre double-page (600×auto) --- */
+    /* ------------------------------------------------------
+       4. Bouton “▶” sur la couverture, entièrement extérieur
+       ------------------------------------------------------ */
+    #coverBtn {
+      position: absolute;
+      top: 50%;
+      right: -10%;            /* on décale à droite à 10% de la largeur */
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      width: 8%;              /* proportionnel à l’iframe */
+      aspect-ratio: 1 / 1;     /* bouton circulaire */
+      font-size: 2.5vh;        /* taille de la flèche adaptative */
+      line-height: 1;
+      text-align: center;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    #coverBtn:hover {
+      background: rgba(0,0,0,0.8);
+    }
+
+    /* =================================================
+       5. Livre double-page (600% de largeur conteneur)
+       ================================================= */
     #book {
       display: none;
-      width: 600px;       /* occupe toute la largeur du conteneur */
-      overflow: hidden;
+      position: absolute;
+      top: 0;               /* aligné en haut du conteneur */
+      left: -50%;           /* pour centrer deux pages de 50% chacune */
+      width: 200%;          /* double-page = 2 × 100% du conteneur */
+      height: auto;         /* la hauteur s’ajustera selon le contenu */
+      overflow: visible;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      position: relative;
-      margin: 0;          /* sans décalage */
+      background: #fff;
     }
     #pages {
       display: flex;
-      width: 100%;
+      width: 100%;          /* 200% du conteneur, mais flex se charge */
     }
     .page {
-      width: 50%;         /* 300px chaque moitié */
+      width: 50%;           /* chaque page fait 50% de #book → 100% du conteneur */
       overflow: hidden;
       position: relative;
       cursor: pointer;
     }
     .page img {
       width: 100%;
-      height: auto;
+      height: auto;         /* pas de rognage vertical */
       display: block;
-      margin: 0 auto;
     }
 
-    /* --- Flèches de navigation placées hors du livre --- */
-    button {
+    /* =================================================
+       6. Boutons ◀ et ▶ extérieurs pour naviguer pages
+       ================================================= */
+    .navBtn {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.6);
       color: white;
       border: none;
-      padding: 10px;
+      width: 8%;            /* proportionnel à l’iframe */
+      aspect-ratio: 1 / 1;
+      font-size: 2.5vh;
+      line-height: 1;
+      text-align: center;
       cursor: pointer;
-      font-size: 18px;
+      border-radius: 50%;
       z-index: 10;
-      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
     #prevBtn {
-      left: -40px;       /* 40px à gauche du livre */
+      left: -10%;           /* 10% à gauche du conteneur */
       display: none;
     }
     #nextBtn {
-      right: -40px;      /* 40px à droite du livre */
+      right: -10%;          /* 10% à droite du conteneur */
       display: none;
+    }
+    .navBtn:hover {
+      background: rgba(0,0,0,0.8);
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <!-- Affichage initial : couverture seule, centrée -->
-    <div id="cover">
-      <img src="images/0-cover-front.png" alt="Couverture">
-    </div>
 
-    <!-- Livre double-page (caché au démarrage) -->
+  <div id="container">
+    <!-- Couverture responsive (ratio 3:4) -->
+    <div id="cover">
+      <img src="images/0-cover-front.png" alt="Couverture du livre">
+    </div>
+    <button id="coverBtn">❯</button>
+
+    <!-- Livre double-page responsive -->
     <div id="book">
-      <button id="prevBtn">←</button>
+      <button id="prevBtn" class="navBtn">❮</button>
       <div id="pages">
         <div class="page" id="pageLeft"></div>
         <div class="page" id="pageRight"></div>
       </div>
-      <button id="nextBtn">→</button>
+      <button id="nextBtn" class="navBtn">❯</button>
     </div>
   </div>
 
   <script>
-    // Liste des images dans l’ordre
+    /* ===========================================================
+       1. Liste des images (chemins relatifs à la racine du projet)
+       =========================================================== */
     const images = [
       'images/0-cover-front.png',
       'images/1-page-de-garde.png',
@@ -113,59 +172,83 @@
       'images/3-page-de-gauche.png',
       'images/4-page-de-droite.png'
     ];
-    let currentIndex = 1; // on commence sur la page-de-garde
+    let currentIndex = 0; // 0 = couverture
 
+    /* Références DOM */
     const coverEl     = document.getElementById('cover');
     const bookEl      = document.getElementById('book');
     const pageLeftEl  = document.getElementById('pageLeft');
     const pageRightEl = document.getElementById('pageRight');
+    const coverBtn    = document.getElementById('coverBtn');
     const nextBtn     = document.getElementById('nextBtn');
     const prevBtn     = document.getElementById('prevBtn');
 
+    /* -------------------------------------------
+       Affiche le livre (cache la couverture)
+       ------------------------------------------- */
     function showBook() {
-      coverEl.style.display = 'none';
-      bookEl.style.display  = 'block';
-      currentIndex = 1;
+      coverEl.style.display  = 'none';
+      coverBtn.style.display = 'none';
+      bookEl.style.display   = 'block';
+      currentIndex = 1; // page-de-garde
       renderPages();
       adjustBookHeight();
     }
 
+    /* -------------------------------------------
+       Affiche la couverture (cache le livre)
+       ------------------------------------------- */
     function showCover() {
-      bookEl.style.display  = 'none';
-      coverEl.style.display = 'block';
-      coverEl.style.height  = 'auto';
+      bookEl.style.display   = 'none';
+      coverEl.style.display  = 'block';
+      coverBtn.style.display = 'block';
+      currentIndex = 0;
+      updateArrows();
     }
 
+    /* -------------------------------------------
+       Affiche les pages gauche + droite
+       ------------------------------------------- */
     function renderPages() {
       pageLeftEl.innerHTML  = '';
       pageRightEl.innerHTML = '';
 
-      // Chargement de l’image de gauche
+      // Page de gauche
       if (images[currentIndex]) {
-        const imgL = new Image();
+        const imgL = document.createElement('img');
         imgL.src = images[currentIndex];
         pageLeftEl.appendChild(imgL);
       }
-      // Chargement de l’image de droite
+      // Page de droite
       if (images[currentIndex + 1]) {
-        const imgR = new Image();
+        const imgR = document.createElement('img');
         imgR.src = images[currentIndex + 1];
         pageRightEl.appendChild(imgR);
       }
 
-      // Afficher ou masquer les flèches
-      prevBtn.style.display = (currentIndex > 1) ? 'block' : 'none';
-      nextBtn.style.display = (currentIndex + 2 < images.length) ? 'block' : 'none';
-
-      // Ajuster la hauteur du livre selon la plus grande des deux images
+      updateArrows();
       adjustBookHeight();
     }
 
+    /* -------------------------------------------
+       Met à jour l'affichage des flèches ◀ ▶
+       ------------------------------------------- */
+    function updateArrows() {
+      // ◀ (précédent) visible dès qu’on est sur index > 0
+      prevBtn.style.display = (currentIndex > 0) ? 'block' : 'none';
+      // ▶ (suivant) visible s’il reste au moins deux pages
+      nextBtn.style.display = (currentIndex + 2 < images.length) ? 'block' : 'none';
+    }
+
+    /* -------------------------------------------
+       Ajuste la hauteur du livre pour ne rien rogner
+       ------------------------------------------- */
     function adjustBookHeight() {
+      // On cherche la hauteur nécessaire pour chaque image
       const leftImg  = pageLeftEl.querySelector('img');
       const rightImg = pageRightEl.querySelector('img');
-      let hLeft  = leftImg  ? leftImg.naturalHeight  * (300 / leftImg.naturalWidth)  : 0;
-      let hRight = rightImg ? rightImg.naturalHeight * (300 / rightImg.naturalWidth) : 0;
+      let hLeft  = leftImg  ? leftImg.naturalHeight  * (pageLeftEl.offsetWidth / leftImg.naturalWidth)  : 0;
+      let hRight = rightImg ? rightImg.naturalHeight * (pageRightEl.offsetWidth / rightImg.naturalWidth) : 0;
       const maxH = Math.max(hLeft, hRight);
 
       if (maxH > 0) {
@@ -175,7 +258,10 @@
       }
     }
 
-    // Événements
+    /* -------------------------------------------
+       Gérer les clics pour tourner les pages
+       ------------------------------------------- */
+    coverBtn.addEventListener('click', showBook);
     coverEl.addEventListener('click', showBook);
 
     nextBtn.addEventListener('click', () => {
@@ -208,9 +294,16 @@
       }
     });
 
-    // Lorsqu’une image est insérée, on recalcule la hauteur
+    /* -------------------------------------------
+       Recalcul automatique de la hauteur à chaque insertion d’image
+       ------------------------------------------- */
     pageLeftEl.addEventListener('DOMNodeInserted', adjustBookHeight);
     pageRightEl.addEventListener('DOMNodeInserted', adjustBookHeight);
+
+    /* -------------------------------------------
+       Initialisation : on affiche la couverture
+       ------------------------------------------- */
+    showCover();
   </script>
 </body>
 </html>
