@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Livre Magique – Boutons Extérieurs</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: visible; /* pour laisser les flèches apparaître */
+    }
+    /* Conteneur global : largeur fixe à 600px pour accueillir le livre et les flèches */
+    #container {
+      position: relative;
+      width: 600px;
+      overflow: visible; /* s’assurer que rien ne soit rogné */
+    }
+
+    /* --- Couverture (300×auto) centrée dans 600px --- */
+    #cover {
+      width: 300px;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      margin: 0 auto; /* centre la couverture dans le conteneur de 600px */
+    }
+    #cover img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* --- Livre double-page (600×auto) --- */
+    #book {
+      display: none;
+      width: 600px;       /* occupe toute la largeur du conteneur */
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      position: relative;
+      margin: 0;          /* sans décalage */
+    }
+    #pages {
+      display: flex;
+      width: 100%;
+    }
+    .page {
+      width: 50%;         /* 300px chaque moitié */
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .page img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* --- Flèches de navigation placées hors du livre --- */
+    button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10;
+      border-radius: 4px;
+    }
+    #prevBtn {
+      left: -40px;       /* 40px à gauche du livre */
+      display: none;
+    }
+    #nextBtn {
+      right: -40px;      /* 40px à droite du livre */
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Affichage initial : couverture seule, centrée -->
+    <div id="cover">
+      <img src="images/0-cover-front.png" alt="Couverture">
+    </div>
+
+    <!-- Livre double-page (caché au démarrage) -->
+    <div id="book">
+      <button id="prevBtn">←</button>
+      <div id="pages">
+        <div class="page" id="pageLeft"></div>
+        <div class="page" id="pageRight"></div>
+      </div>
+      <button id="nextBtn">→</button>
+    </div>
+  </div>
+
+  <script>
+    // Liste des images dans l’ordre
+    const images = [
+      'images/0-cover-front.png',
+      'images/1-page-de-garde.png',
+      'images/2-page-auteur.png',
+      'images/3-page-de-gauche.png',
+      'images/4-page-de-droite.png'
+    ];
+    let currentIndex = 1; // on commence sur la page-de-garde
+
+    const coverEl     = document.getElementById('cover');
+    const bookEl      = document.getElementById('book');
+    const pageLeftEl  = document.getElementById('pageLeft');
+    const pageRightEl = document.getElementById('pageRight');
+    const nextBtn     = document.getElementById('nextBtn');
+    const prevBtn     = document.getElementById('prevBtn');
+
+    function showBook() {
+      coverEl.style.display = 'none';
+      bookEl.style.display  = 'block';
+      currentIndex = 1;
+      renderPages();
+      adjustBookHeight();
+    }
+
+    function showCover() {
+      bookEl.style.display  = 'none';
+      coverEl.style.display = 'block';
+      coverEl.style.height  = 'auto';
+    }
+
+    function renderPages() {
+      pageLeftEl.innerHTML  = '';
+      pageRightEl.innerHTML = '';
+
+      // Chargement de l’image de gauche
+      if (images[currentIndex]) {
+        const imgL = new Image();
+        imgL.src = images[currentIndex];
+        pageLeftEl.appendChild(imgL);
+      }
+      // Chargement de l’image de droite
+      if (images[currentIndex + 1]) {
+        const imgR = new Image();
+        imgR.src = images[currentIndex + 1];
+        pageRightEl.appendChild(imgR);
+      }
+
+      // Afficher ou masquer les flèches
+      prevBtn.style.display = (currentIndex > 1) ? 'block' : 'none';
+      nextBtn.style.display = (currentIndex + 2 < images.length) ? 'block' : 'none';
+
+      // Ajuster la hauteur du livre selon la plus grande des deux images
+      adjustBookHeight();
+    }
+
+    function adjustBookHeight() {
+      const leftImg  = pageLeftEl.querySelector('img');
+      const rightImg = pageRightEl.querySelector('img');
+      let hLeft  = leftImg  ? leftImg.naturalHeight  * (300 / leftImg.naturalWidth)  : 0;
+      let hRight = rightImg ? rightImg.naturalHeight * (300 / rightImg.naturalWidth) : 0;
+      const maxH = Math.max(hLeft, hRight);
+
+      if (maxH > 0) {
+        bookEl.style.height      = maxH + 'px';
+        pageLeftEl.style.height  = maxH + 'px';
+        pageRightEl.style.height = maxH + 'px';
+      }
+    }
+
+    // Événements
+    coverEl.addEventListener('click', showBook);
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex + 2 < images.length) {
+        currentIndex += 2;
+        renderPages();
+      }
+    });
+    pageRightEl.addEventListener('click', () => {
+      if (currentIndex + 2 < images.length) {
+        currentIndex += 2;
+        renderPages();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex - 2 >= 1) {
+        currentIndex -= 2;
+        renderPages();
+      } else {
+        showCover();
+      }
+    });
+    pageLeftEl.addEventListener('click', () => {
+      if (currentIndex - 2 >= 1) {
+        currentIndex -= 2;
+        renderPages();
+      } else {
+        showCover();
+      }
+    });
+
+    // Lorsqu’une image est insérée, on recalcule la hauteur
+    pageLeftEl.addEventListener('DOMNodeInserted', adjustBookHeight);
+    pageRightEl.addEventListener('DOMNodeInserted', adjustBookHeight);
+  </script>
+</body>
+</html>
